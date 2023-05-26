@@ -47,17 +47,40 @@ class agregarMedicamentos(tk.Frame):    #CLASE PARA AGREGAR MEDICAMENTOS
     def insertMedicamento(self):             
         conexion = sqlite3.connect("Almacen.db")
         datos = conexion.cursor()
-        if nombre.get() == "" or descripcion.get() == "" or precio.get() == "" :
-            messagebox.showerror("Incompleto", "LLene todos los campos por favor")
+    
+        nombre = nombre.get()
+        descripcion = descripcion.get()
+        precio = precio.get()
+    
+    # Validar que todos los campos estén completos
+        if nombre == "" or descripcion == "" or precio == "":
+            messagebox.showerror("Incompleto", "Llene todos los campos, por favor")
             return
-        print(nombre.get())
-        print(descripcion.get())
-        int_precio = int(precio.get())
+    
+    # Validar que el nombre y la descripción solo contengan letras
+        if not nombre.isalpha():
+            messagebox.showerror("Error", "Ingrese solo letras en el campo de nombre")
+            return
+    
+        if not descripcion.isalpha():
+            messagebox.showerror("Error", "Ingrese solo letras en el campo de descripción")
+            return
+    
+    # Validar que el precio solo contenga números
+        if not re.match(r'^\d+$', precio):
+            messagebox.showerror("Error", "Ingrese solo números en el campo de precio")
+            return
+
+        print(nombre)
+        print(descripcion)
+        int_precio = int(precio)
         print(int_precio)
+    
         for Imagen in getImagen:
             insertImg = self.imagenABinario(Imagen)
             datos.execute("INSERT INTO Medicamentos (Nombre, Descripcion, Precio, Imagen) VALUES (?,?,?,:Imagen)",
-                       (nombre.get(), descripcion.get(), int_precio, insertImg))
+                      (nombre, descripcion, int_precio, insertImg))
+    
         conexion.commit()
         conexion.close()
         ventana_nuevo.destroy()
@@ -141,6 +164,9 @@ class consultarMedicamentos(tk.Frame):  #CLASE PARA VER MEDICAMENTOS
             registros_lb.insert(tk.END, registro)
 
     def buscarEnfermedad(self, sintoma):  
+        if not sintoma.isalpha():
+            messagebox.showerror("Error", "Ingrese solo letras en el campo de síntomas")
+        return
         conexion = sqlite3.connect("Almacen.db")    
         cursor = conexion.cursor()
         registros_raw = cursor.execute("SELECT Id, Nombre, Descripcion, Precio FROM Medicamentos WHERE Descripcion LIKE '%" + sintoma + "%'")
